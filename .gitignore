@@ -1,0 +1,14 @@
+Set-Content .gitignore "venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+budget.db
+logs/agent_logs.json
+reports/
+data/test_expenses.csv
+data/bad_expenses.csv
+.pytest_cache/
+*.egg-info/
+*.db-shm
+*.db-wal"
