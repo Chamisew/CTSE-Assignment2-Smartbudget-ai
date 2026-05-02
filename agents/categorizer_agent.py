@@ -5,3 +5,6 @@ Responsible for explaining categorization decisions from existing records.
 
 from crewai import Agent
 from langchain_ollama import OllamaLLM
+
+
+def create_categorizer_agent() -> Agent:
