@@ -64,3 +64,13 @@ class SaveDatabaseTool(BaseTool):
         "and saves them into the local SQLite database budget.db."
     )
     args_schema: type[BaseModel] = SaveDatabaseInput
+
+        def _run(self, records_str: str) -> str:
+        start = records_str.find("[")
+        end = records_str.rfind("]") + 1
+
+        if start == -1 or end == 0:
+            return "Error: Could not find expense records list in input."
+
+        list_str = records_str[start:end]
+        records = ast.literal_eval(list_str)
