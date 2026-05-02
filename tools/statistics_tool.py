@@ -20,3 +20,29 @@ class StatisticsTool(BaseTool):
         cursor = conn.cursor()
 
         return "Tool initialized"
+where_clause = ""
+params = []
+if month != "all":
+    where_clause = "WHERE date LIKE ?"
+    params = [f"{month}%"]
+
+# Category stats
+cursor.execute(f"""
+    SELECT category,
+           COUNT(*),
+           SUM(amount),
+           AVG(amount),
+           MAX(amount)
+    FROM expenses {where_clause}
+    GROUP BY category
+""", params)
+
+category_stats = cursor.fetchall()
+
+# Overall stats
+cursor.execute(f"""
+    SELECT COUNT(*), SUM(amount), AVG(amount), MAX(amount), MIN(amount)
+    FROM expenses {where_clause}
+""", params)
+
+overall = cursor.fetchone()
