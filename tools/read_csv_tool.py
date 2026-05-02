@@ -1,3 +1,4 @@
+import csv
 import os
 from typing import Any
 from crewai.tools import BaseTool
@@ -19,4 +20,13 @@ class ReadCSVTool(BaseTool):
     args_schema: type[BaseModel] = ReadCSVInput
 
     def _run(self, file_path: str) -> str:
-        return "CSV reading not implemented yet"
+        if not os.path.exists(file_path):
+            return f"File not found: {file_path}"
+
+        rows = []
+        with open(file_path, newline="", encoding="utf-8") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                rows.append(row)
+
+        return f"Loaded {len(rows)} rows"
