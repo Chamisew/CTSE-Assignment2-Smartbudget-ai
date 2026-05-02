@@ -34,3 +34,53 @@ class GenerateReportTool(BaseTool):
         "markdown (.md) file in the reports/ folder with a timestamp."
     )
     args_schema: type[BaseModel] = ReportInput
+
+    def _run(self, report_content: str) -> str:
+        """
+        Save the report content to a markdown file.
+
+        Args:
+            report_content: Full report text to save
+
+        Returns:
+            Confirmation message with file path
+        """
+        try:
+            os.makedirs(REPORTS_DIR, exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = REPORTS_DIR / f"budget_report_{timestamp}.md"
+
+            # Add a header if not present
+            if not report_content.strip().startswith("#"):
+                header = (
+                    f"# SmartBudget AI — Financial Report\n"
+                    f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                )
+                report_content = header + report_content
+
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(report_content)
+
+            result = f"Report successfully saved to: {filename}"
+
+            log_agent_action(
+                agent_name="ReporterAgent",
+                input_data="Financial statistics and analysis",
+                tool_called="generate_report",
+                output=result,
+                status="success"
+            )
+
+            return result
+
+        except Exception as e:
+            error = f"Report generation error: {str(e)}"
+            log_agent_action(
+                agent_name="ReporterAgent",
+                input_data="report content",
+                tool_called="generate_report",
+                output=error,
+                status="error"
+            )
+            return error
