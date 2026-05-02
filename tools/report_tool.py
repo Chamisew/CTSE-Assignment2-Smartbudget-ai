@@ -20,3 +20,17 @@ class ReportInput(BaseModel):
     report_content: str = Field(
         description="The full financial report content to save as markdown"
     )
+
+
+class GenerateReportTool(BaseTool):
+    """
+    Saves the final financial analysis report as a markdown file.
+    Automatically names the file with a timestamp.
+    """
+
+    name: str = "generate_report"
+    description: str = (
+        "Takes the complete financial report content and saves it as a "
+        "markdown (.md) file in the reports/ folder with a timestamp."
+    )
+    args_schema: type[BaseModel] = ReportInput
