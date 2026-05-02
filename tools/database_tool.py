@@ -27,6 +27,7 @@ CATEGORIES = {
     "other": []
 }
 
+
 def categorize_expense(description: str) -> str:
     """
     Categorize an expense based on its description keywords.
@@ -42,3 +43,10 @@ def categorize_expense(description: str) -> str:
         if any(keyword in desc_lower for keyword in keywords):
             return category
     return "other"
+
+
+class SaveDatabaseInput(BaseModel):
+    """Input schema for the SaveDatabaseTool."""
+    records_str: str = Field(
+        description="String representation of the list of expense record dicts"
+    )
