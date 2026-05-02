@@ -65,12 +65,82 @@ class SaveDatabaseTool(BaseTool):
     )
     args_schema: type[BaseModel] = SaveDatabaseInput
 
-        def _run(self, records_str: str) -> str:
-        start = records_str.find("[")
-        end = records_str.rfind("]") + 1
+    def _run(self, records_str: str) -> str:
+        """
+        Parse, categorize, and save expense records to SQLite.
 
-        if start == -1 or end == 0:
-            return "Error: Could not find expense records list in input."
+        Args:
+            records_str: String of expense records list
 
-        list_str = records_str[start:end]
-        records = ast.literal_eval(list_str)
+        Returns:
+            Summary of what was saved
+        """
+        try:
+            # Parse the records from string
+            # Extract the list portion from the collector agent's output
+            start = records_str.find("[")
+            end = records_str.rfind("]") + 1
+            if start == -1 or end == 0:
+                return "Error: Could not find expense records list in input."
+
+            list_str = records_str[start:end]
+            records = ast.literal_eval(list_str)
+
+            # Setup database
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    currency TEXT NOT NULL,
+                    category TEXT NOT NULL
+                )
+            """)
+
+            # Clear old data for fresh run
+            cursor.execute("DELETE FROM expenses")
+
+            # Insert categorized records
+            saved_count = 0
+            for record in records:
+                category = categorize_expense(record["description"])
+                cursor.execute(
+                    "INSERT INTO expenses (date, description, amount, currency, category) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (record["date"], record["description"],
+                     record["amount"], record["currency"], category)
+                )
+                saved_count += 1
+
+            conn.commit()
+            conn.close()
+
+            result = (
+                f"Successfully saved {saved_count} expenses to database. "
+                f"Categories used: {list(CATEGORIES.keys())}"
+            )
+
+            log_agent_action(
+                agent_name="CategorizerAgent",
+                input_data=f"{saved_count} records received",
+                tool_called="save_to_database",
+                output=result,
+                status="success"
+            )
+
+            return result
+
+        except Exception as e:
+            error = f"Database error: {str(e)}"
+            log_agent_action(
+                agent_name="CategorizerAgent",
+                input_data=records_str[:100],
+                tool_called="save_to_database",
+                output=error,
+                status="error"
+            )
+            return error
