@@ -50,3 +50,17 @@ class SaveDatabaseInput(BaseModel):
     records_str: str = Field(
         description="String representation of the list of expense record dicts"
     )
+
+
+class SaveDatabaseTool(BaseTool):
+    """
+    Categorizes expenses and saves them into a local SQLite database.
+    Creates the database and table if they do not exist.
+    """
+
+    name: str = "save_to_database"
+    description: str = (
+        "Takes expense records as a string, categorizes each one, "
+        "and saves them into the local SQLite database budget.db."
+    )
+    args_schema: type[BaseModel] = SaveDatabaseInput
