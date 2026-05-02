@@ -14,3 +14,4 @@ def create_reporter_agent() -> Agent:
     Returns:
         Configured CrewAI Agent instance
     """
+    llm = "ollama/mistral"
