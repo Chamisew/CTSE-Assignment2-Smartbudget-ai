@@ -26,3 +26,19 @@ CATEGORIES = {
                       "entertainment"],
     "other": []
 }
+
+def categorize_expense(description: str) -> str:
+    """
+    Categorize an expense based on its description keywords.
+
+    Args:
+        description: The expense description text
+
+    Returns:
+        Category string
+    """
+    desc_lower = description.lower()
+    for category, keywords in CATEGORIES.items():
+        if any(keyword in desc_lower for keyword in keywords):
+            return category
+    return "other"
